@@ -26,18 +26,9 @@ class info
 
 public:
     template <class Archive>
-    void save(Archive &archive)
+    void serialize(Archive &archive)
     {
         archive(data_map);
-    }
-
-    template <class Archive>
-    void load(Archive &archive)
-    {
-
-        std::unordered_map<std::string, data> _data_map;
-        archive(_data_map);
-        data_map = _data_map;
     }
 
     void add_data(std::string name, data d)
@@ -64,6 +55,8 @@ int main()
     std::ofstream os("test.bin", std::ios::binary);
     cereal::BinaryOutputArchive archive(os);
     archive(i);
+
+    os.close();
 
     info i2;
     std::ifstream is("test.bin", std::ios::binary);
