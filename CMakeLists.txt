@@ -124,20 +124,21 @@ include(FetchContent)
 # target_link_libraries(Demo my_opencv)
 
 message(STATUS "安装 fmt")
-FetchContent_Declare(fmt GIT_REPOSITORY https://github.com/fmtlib/fmt GIT_TAG 10.2.0)
+FetchContent_Populate(fmt GIT_REPOSITORY https://github.com/fmtlib/fmt GIT_TAG 10.2.0)
 set(BUILD_SHARED_LIBS OFF)
 
 message(STATUS "安装 spdlog")
-FetchContent_Declare(spdlog GIT_REPOSITORY https://github.com/gabime/spdlog.git GIT_TAG v1.12.0)
+FetchContent_Populate(spdlog GIT_REPOSITORY https://github.com/gabime/spdlog.git GIT_TAG v1.12.0)
 set(BUILD_SHARED_LIBS OFF)
 
 message(STATUS "安装 cereal")
-FetchContent_Declare(cereal GIT_REPOSITORY https://github.com/USCiLab/cereal.git GIT_TAG v1.3.0)
+FetchContent_Populate(cereal GIT_REPOSITORY https://github.com/USCiLab/cereal.git GIT_TAG v1.3.0)
 set(JUST_INSTALL_CEREAL ON)
+set(BUILD_SANDBOX OFF)
 
-set(dep_fmt_include ${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/fmt-src/include)
-set(dep_spdlog_include ${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/spdlog-src/include)
-set(dep_cereal_include ${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/cereal-src/include)
+set(dep_fmt_include ${fmt_SOURCE_DIR}/include)
+set(dep_spdlog_include ${spdlog_SOURCE_DIR}/include)
+set(dep_cereal_include ${cereal_SOURCE_DIR}/include)
 
 file(GLOB_RECURSE dep_fmt_h ${dep_fmt_include}/*.h )
 file(GLOB_RECURSE dep_spdlog_h ${dep_spdlog_include}/*.h)
@@ -149,22 +150,22 @@ list(APPEND deps_include ${dep_fmt_include} ${dep_spdlog_include} ${dep_cereal_i
 list(APPEND deps_h ${dep_fmt_h} ${dep_spdlog_h} ${dep_cereal_h})
 list(APPEND deps_src ${dep_fmt_src} ${dep_spdlog_src})
 
+message(STATUS "目录：${deps_include}")
+
 add_library(cvAutoTrack.Depends SHARED ${deps_src} ${deps_h})
 target_compile_definitions(cvAutoTrack.Depends PRIVATE -DFMT_EXPORT -DSPDLOG_COMPILED_LIB -DSPDLOG_SHARED_LIB -Dspdlog_EXPORTS)
 target_include_directories(cvAutoTrack.Depends PRIVATE ${deps_include})
-#target_link_libraries(my_deps PRIVATE fmt::fmt spdlog::spdlog)
 
 set_target_properties(cvAutoTrack.Depends PROPERTIES DEBUG_POSTFIX "d")
 
-install (TARGETS cvAutoTrack.Depends DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/install
-    LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/install/lib
-    ARCHIVE DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/install/lib
-    RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/install/bin
-    INCLUDES DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/install/include
+install(TARGETS cvAutoTrack.Depends DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/install
+    LIBRARY DESTINATION  ${CMAKE_BINARY_DIR}/install/lib
+    ARCHIVE DESTINATION  ${CMAKE_BINARY_DIR}/install/lib
+    RUNTIME DESTINATION  ${CMAKE_BINARY_DIR}/install/bin
+    INCLUDES DESTINATION ${CMAKE_BINARY_DIR}/install/include
  )
-install (DIRECTORY ${deps_include} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/install/include)
+install(DIRECTORY ${deps_include} DESTINATION ${CMAKE_BINARY_DIR}/install/include)
 
 add_executable(test main.cpp)
-target_link_directories(test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/install/lib)
-target_include_directories(test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/install/include)
+target_include_directories(test PRIVATE ${deps_include})
 target_link_libraries(test PRIVATE cvAutoTrack.Depends)
