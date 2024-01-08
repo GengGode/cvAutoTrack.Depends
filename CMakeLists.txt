@@ -153,6 +153,10 @@ ${opencv_SOURCE_DIR}/3rdparty/openexr/Imath
 ${opencv_BINARY_DIR}/3rdparty/openexr
 ${opencv_SOURCE_DIR}/3rdparty/openjpeg/openjp2
 ${opencv_BINARY_DIR}/3rdparty/openjpeg/openjp2
+
+
+${opencv_BINARY_DIR}/3rdparty/ippicv/ippicv_win/icv/include
+${opencv_BINARY_DIR}/3rdparty/ippicv/ippicv_win/iw/include
 )
 
 set(dep_fmt_include ${fmt_SOURCE_DIR}/include)
@@ -207,7 +211,6 @@ file(GLOB_RECURSE dep_spdlog_src ${dep_spdlog_include}/../src/*.cpp)
 
 
 list(APPEND deps_include ${dep_fmt_include} ${dep_spdlog_include} ${dep_cereal_include} ${dep_opencv_include} ${dep_opencv_3rdparty_include} ${OPENCV_CONFIG_FILE_INCLUDE_DIR}
-${dep_opencv_modules_include}/calib3d/include
 ${dep_opencv_modules_include}/calib3d/include
 ${dep_opencv_modules_include}/core/include
 ${dep_opencv_modules_include}/flann/include
