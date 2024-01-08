@@ -158,6 +158,7 @@ ${opencv_BINARY_DIR}/3rdparty/openjpeg/openjp2
 ${opencv_BINARY_DIR}/3rdparty/ippicv/ippicv_win/icv/include
 ${opencv_BINARY_DIR}/3rdparty/ippicv/ippicv_win/iw/include
 )
+file(GLOB dep_opencv_3rdparty_libs ${opencv_BINARY_DIR}/3rdparty/lib/Debug/*.lib)
 
 set(dep_fmt_include ${fmt_SOURCE_DIR}/include)
 set(dep_spdlog_include ${spdlog_SOURCE_DIR}/include)
@@ -171,7 +172,7 @@ ${dep_opencv_modules_include}/calib3d/include/*.h*
 ${dep_opencv_modules_include}/core/include/*.h*
 ${dep_opencv_modules_include}/flann/include/*.h*
 ${dep_opencv_modules_include}/features2d/include/*.h*
-${dep_opencv_modules_include}/highgui/include/*.h*
+#${dep_opencv_modules_include}/highgui/include/*.h*
 ${dep_opencv_modules_include}/imgcodecs/include/*.h*
 ${dep_opencv_modules_include}/imgproc/include/*.h*
 ${dep_opencv_modules_include}/world/include/*.h*
@@ -196,7 +197,7 @@ ${dep_opencv_modules_include}/calib3d/src/*.cpp
 ${dep_opencv_modules_include}/core/src/*.cpp
 ${dep_opencv_modules_include}/flann/src/*.cpp
 ${dep_opencv_modules_include}/features2d/src/*.cpp
-${dep_opencv_modules_include}/highgui/src/*.cpp
+#${dep_opencv_modules_include}/highgui/src/*.cpp
 ${dep_opencv_modules_include}/imgcodecs/src/*.cpp
 ${dep_opencv_modules_include}/imgproc/src/*.cpp
 ${dep_opencv_modules_include}/world/src/*.cpp
@@ -277,7 +278,7 @@ target_compile_definitions(cvAutoTrack.Depends PRIVATE
 set(cvAutoTrack.Depends PROPERTIES OPENCV_ALLOCATOR_STATS_COUNTER_TYPE "long long")
 target_include_directories(cvAutoTrack.Depends PRIVATE ${deps_include})
 target_link_directories(cvAutoTrack.Depends PRIVATE ${opencv_BINARY_DIR}/lib/Debug ${opencv_BINARY_DIR}/3rdparty/lib/Debug)
-target_link_libraries(cvAutoTrack.Depends PRIVATE opencv_world480d.lib)
+target_link_libraries(cvAutoTrack.Depends PRIVATE ${dep_opencv_3rdparty_libs})
 
 set_target_properties(cvAutoTrack.Depends PROPERTIES DEBUG_POSTFIX "d")
 
