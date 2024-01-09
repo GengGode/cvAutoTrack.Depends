@@ -5,7 +5,12 @@ project(cvAutoTrack.Depends)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
 
-
+set(USED_PROXY OFF CACHE BOOL "是否使用代理")
+if(USED_PROXY)
+    message(STATUS "设置代理 127.0.0.1:1080")
+    set(ENV{http_proxy} "http://127.0.0.1:1080")
+    set(ENV{https_proxy} "http://127.0.0.1:1080")
+endif()
 
 include(FetchContent)
 
@@ -103,6 +108,15 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 FetchContent_MakeAvailable(opencv)
 
 message(STATUS "opencv编译目录：${opencv_BINARY_DIR}")
+
+# check download cache
+# fils : ${opencv_BINARY_DIR}/download/xfeatures2d/vgg_generated_120.i
+if (NOT EXISTS ${opencv_BINARY_DIR}/3rdparty/ippicv/ippicv_win/icv/lib/intel64/ippicvmt.lib)
+    message(FAIAL_ERROR "缺少ippicvmt.lib, 请启用代理（set(USED_PROXY ON)）重新编译")
+endif()
+
+
+
 
 message(STATUS "安装 fmt")
 FetchContent_Populate(fmt GIT_REPOSITORY https://github.com/fmtlib/fmt GIT_TAG 10.2.0)
