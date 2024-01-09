@@ -14,7 +14,7 @@ FetchContent_Populate(opencv_contrib GIT_REPOSITORY https://github.com/opencv/op
 # # 手动下载opencv编译安装
 # # https://github.com/opencv/opencv.git 4.8.0
 FetchContent_Declare(opencv GIT_REPOSITORY https://github.com/opencv/opencv.git GIT_TAG 4.8.0)
-set(BUILD_SHARED_LIBS OFF)
+set(BUILD_SHARED_LIBS ON)
 set(OPENCV_CONFIG_FILE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/opencv_gen_include)
 # extra modules
 set(OPENCV_EXTRA_MODULES_PATH ${opencv_contrib_SOURCE_DIR}/modules)
@@ -74,8 +74,6 @@ set(BUILD_opencv_ximgproc OFF)
 set(BUILD_opencv_xobjdetect OFF)
 set(BUILD_opencv_xphoto OFF)
 # disable python
-set(BUILD_opencv_python2 OFF)
-set(BUILD_opencv_python3 OFF)
 set(BUILD_opencv_python_bindings_generator OFF)
 set(BUILD_opencv_python_tests OFF)
 # disable java
@@ -84,6 +82,8 @@ set(BUILD_opencv_java_bindings_generator OFF)
 # disable js
 set(BUILD_opencv_js OFF)
 set(BUILD_opencv_js_bindings_generator OFF)
+# disable objc
+set(BUILD_opencv_objc_bindings_generator OFF)
 # not test
 set(BUILD_TESTS OFF)
 set(BUILD_PERF_TESTS OFF)
@@ -103,21 +103,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 FetchContent_MakeAvailable(opencv)
 
 message(STATUS "opencv编译目录：${opencv_BINARY_DIR}")
-
-
-# 将opencv的静态库链接到my_opencv dynamic库
-# set(OpenCV_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/deps/opencv/x64/vc17/staticlib)
-# find_package(OpenCV REQUIRED)
-# 
-# file(GLOB_RECURSE opencv_src ${CMAKE_CURRENT_SOURCE_DIR}/deps/opencv/include/*.h)
-# add_library(my_opencv SHARED ${opencv_src} main.cpp)
-# target_include_directories(my_opencv PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/deps/opencv/include)
-# target_compile_definitions(my_opencv PRIVATE -DOPENCV_EXPORTS -DCVAPI_EXPORTS)
-# target_link_libraries(my_opencv PRIVATE opencv_world opencv_img_hash)
-# 
-# add_executable(Demo main.cpp)
-# target_include_directories(Demo PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/deps/opencv/include)
-# target_link_libraries(Demo my_opencv)
 
 message(STATUS "安装 fmt")
 FetchContent_Populate(fmt GIT_REPOSITORY https://github.com/fmtlib/fmt GIT_TAG 10.2.0)
@@ -140,7 +125,9 @@ list(APPEND dep_opencv_3rdparty_include
 ${opencv_SOURCE_DIR}/3rdparty/include/opencl/1.2
 ${opencv_SOURCE_DIR}/3rdparty/include/vulkan
 ${opencv_SOURCE_DIR}/3rdparty/zlib
-${opencv_SOURCE_DIR}/3rdparty/libjpeg
+# ${opencv_SOURCE_DIR}/3rdparty/libjpeg
+${opencv_SOURCE_DIR}/3rdparty/libjpeg-turbo/src
+${opencv_BINARY_DIR}/3rdparty/libjpeg-turbo
 ${opencv_SOURCE_DIR}/3rdparty/libpng
 ${opencv_SOURCE_DIR}/3rdparty/libtiff
 ${opencv_BINARY_DIR}/3rdparty/libtiff
@@ -157,15 +144,17 @@ ${opencv_BINARY_DIR}/3rdparty/openjpeg/openjp2
 
 ${opencv_BINARY_DIR}/3rdparty/ippicv/ippicv_win/icv/include
 ${opencv_BINARY_DIR}/3rdparty/ippicv/ippicv_win/iw/include
+${opencv_BINARY_DIR}/3rdparty/ippiw/ippicv_win/iw/include
 )
-file(GLOB dep_opencv_3rdparty_libs ${opencv_BINARY_DIR}/3rdparty/lib/Debug/*.lib)
+
+list(APPEND dep_opencv_libs ${opencv_BINARY_DIR}/3rdparty/ippicv/ippicv_win/icv/lib/intel64/ippicvmt.lib)
 
 set(dep_fmt_include ${fmt_SOURCE_DIR}/include)
 set(dep_spdlog_include ${spdlog_SOURCE_DIR}/include)
 set(dep_cereal_include ${cereal_SOURCE_DIR}/include)
 
 file(GLOB dep_opencv_build_world_include ${opencv_BINARY_DIR}/modules/world/*.h ${opencv_BINARY_DIR}/modules/world/*.hpp)
-file(GLOB dep_opencv_build_world_src ${opencv_BINARY_DIR}/modules/world/*.cpp)
+
 file(GLOB_RECURSE dep_opencv_h
 ${dep_opencv_include}/*.h*
 ${dep_opencv_modules_include}/calib3d/include/*.h*
@@ -186,6 +175,7 @@ ${dep_opencv_modules_include}/imgcodecs/src/*.h*
 ${dep_opencv_modules_include}/imgproc/src/*.h*
 ${dep_opencv_modules_include}/world/src/*.h*
 ${dep_opencv_extra_modules_include}/xfeatures2d/src/*.h*
+${opencv_BINARY_DIR}/3rdparty/libjpeg-turbo/*.h*
 )
 list(APPEND dep_opencv_h ${dep_opencv_build_world_include})
 file(GLOB_RECURSE dep_fmt_h ${dep_fmt_include}/*.h*)
@@ -200,12 +190,21 @@ ${dep_opencv_modules_include}/features2d/src/*.cpp
 #${dep_opencv_modules_include}/highgui/src/*.cpp
 ${dep_opencv_modules_include}/imgcodecs/src/*.cpp
 ${dep_opencv_modules_include}/imgproc/src/*.cpp
-${dep_opencv_modules_include}/world/src/*.cpp
 ${dep_opencv_extra_modules_include}/xfeatures2d/src/*.cpp
+${opencv_BINARY_DIR}/modules/world/opencl_kernels_*.cpp
 )
-list(APPEND dep_opencv_src ${dep_opencv_build_world_src})
+#
+# ${dep_opencv_modules_include}/world/src/*.cpp
 
-
+# delete imgproc/src/resize.lasx.cpp
+list(REMOVE_ITEM dep_opencv_src ${dep_opencv_modules_include}/features2d/src/fast.avx2.cpp)
+list(REMOVE_ITEM dep_opencv_src ${dep_opencv_modules_include}/imgproc/src/resize.lasx.cpp)
+list(REMOVE_ITEM dep_opencv_src ${dep_opencv_modules_include}/imgproc/src/corner.avx.cpp)
+list(REMOVE_ITEM dep_opencv_src ${dep_opencv_modules_include}/imgproc/src/imgwarp.avx2.cpp)
+list(REMOVE_ITEM dep_opencv_src ${dep_opencv_modules_include}/imgproc/src/imgwarp.lasx.cpp)
+list(REMOVE_ITEM dep_opencv_src ${dep_opencv_modules_include}/imgproc/src/imgwarp.sse4_1.cpp)
+list(REMOVE_ITEM dep_opencv_src ${dep_opencv_modules_include}/imgproc/src/resize.avx2.cpp)
+list(REMOVE_ITEM dep_opencv_src ${dep_opencv_modules_include}/imgproc/src/resize.sse4_1.cpp)
 
 file(GLOB_RECURSE dep_fmt_src ${dep_fmt_include}/../src/*.cpp)
 file(GLOB_RECURSE dep_spdlog_src ${dep_spdlog_include}/../src/*.cpp)
@@ -222,35 +221,15 @@ ${dep_opencv_modules_include}/imgproc/include
 ${dep_opencv_modules_include}/world/include
 ${dep_opencv_extra_modules_include}/xfeatures2d/include
 ${opencv_BINARY_DIR}/modules/world
+${opencv_BINARY_DIR}/downloads/xfeatures2d
 ) 
 list(APPEND deps_h ${dep_fmt_h} ${dep_spdlog_h} ${dep_cereal_h} ${dep_opencv_h})
 list(APPEND deps_src ${dep_fmt_src} ${dep_spdlog_src} ${dep_opencv_src})
 
-message(STATUS "目录：${deps_include}")
+message(STATUS "目录：${opencv_BINARY_DIR}")
 
 add_library(cvAutoTrack.Depends SHARED ${deps_src} ${deps_h})
 
-
-# _CRT_SECURE_NO_DEPRECATE
-# _CRT_NONSTDC_NO_DEPRECATE
-# _SCL_SECURE_NO_WARNINGS
-# ENABLE_PLUGINS
-# OPENCV_MODULE_IS_PART_OF_WORLD=1
-# _VARIADIC_MAX=10
-# _WIN32_WINNT=0x0601
-# OPENCV_ALLOCATOR_STATS_COUNTER_TYPE=long long
-# HAVE_WEBP
-# HAVE_IMGCODEC_HDR
-# HAVE_IMGCODEC_SUNRASTER
-# HAVE_IMGCODEC_PXM
-# HAVE_IMGCODEC_PFM
-# _USE_MATH_DEFINES
-# __STDC_CONSTANT_MACROS
-# __STDC_LIMIT_MACROS
-# __STDC_FORMAT_MACROS
-# __OPENCV_BUILD=1
-# OPJ_STATIC
-# HAVE_WIN32UI
 target_compile_definitions(cvAutoTrack.Depends PRIVATE 
 -DFMT_EXPORT 
 -DSPDLOG_COMPILED_LIB -DSPDLOG_SHARED_LIB -Dspdlog_EXPORTS
@@ -274,11 +253,28 @@ target_compile_definitions(cvAutoTrack.Depends PRIVATE
 -D__OPENCV_BUILD=1
 -DOPJ_STATIC
 -DHAVE_WIN32UI
+-DOPENCV_XFEATURES2D_HAS_VGG_DATA=1
 )
 set(cvAutoTrack.Depends PROPERTIES OPENCV_ALLOCATOR_STATS_COUNTER_TYPE "long long")
+target_compile_options(cvAutoTrack.Depends PRIVATE /MP)
 target_include_directories(cvAutoTrack.Depends PRIVATE ${deps_include})
-target_link_directories(cvAutoTrack.Depends PRIVATE ${opencv_BINARY_DIR}/lib/Debug ${opencv_BINARY_DIR}/3rdparty/lib/Debug)
-target_link_libraries(cvAutoTrack.Depends PRIVATE ${dep_opencv_3rdparty_libs})
+target_link_directories(cvAutoTrack.Depends PRIVATE ${CMAKE_BINARY_DIR})
+target_link_libraries(cvAutoTrack.Depends PRIVATE ${dep_opencv_libs} 
+    $<TARGET_OBJECTS:opencv_world_AVX>
+    $<TARGET_OBJECTS:opencv_world_AVX2>
+    $<TARGET_OBJECTS:opencv_world_AVX512_SKX>
+    $<TARGET_OBJECTS:opencv_world_SSE4_1>
+    $<TARGET_OBJECTS:opencv_world_SSE4_2>
+    $<TARGET_OBJECTS:jsimd>
+    $<TARGET_FILE:ippiw>
+    $<TARGET_FILE:IlmImf>
+    $<TARGET_FILE:libjpeg-turbo>
+    $<TARGET_FILE:libpng>
+    $<TARGET_FILE:libtiff>
+    $<TARGET_FILE:libwebp>
+    $<TARGET_FILE:libopenjp2>
+    $<TARGET_FILE:zlib>
+    )
 
 set_target_properties(cvAutoTrack.Depends PROPERTIES DEBUG_POSTFIX "d")
 
