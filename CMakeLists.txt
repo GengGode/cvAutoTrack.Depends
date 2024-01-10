@@ -276,6 +276,7 @@ PRIVATE
 -DOPJ_STATIC
 -DHAVE_WIN32UI
 -DOPENCV_XFEATURES2D_HAS_VGG_DATA=1
+-DCOMPRESS
 )
 set(cvAutoTrack.Depends PROPERTIES OPENCV_ALLOCATOR_STATS_COUNTER_TYPE "long long")
 target_compile_options(cvAutoTrack.Depends PRIVATE /MP)
@@ -295,6 +296,7 @@ target_link_libraries(cvAutoTrack.Depends PRIVATE ${dep_opencv_libs}
     $<TARGET_FILE:libtiff>
     $<TARGET_FILE:libwebp>
     $<TARGET_FILE:libopenjp2>
+    PUBLIC
     $<TARGET_FILE:zlib>
     )
 

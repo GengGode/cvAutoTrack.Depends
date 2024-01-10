@@ -10,6 +10,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/core.hpp>
+#include <zlib.h>
 #ifdef COMPRESS
 // need PUBLIC zlib library
 #include <zlib.h>
@@ -120,6 +121,20 @@ namespace cereal
         mat = cv::imdecode(buf, cv::IMREAD_UNCHANGED);
     };
 } // namespace cereal
+
+auto comp(float a) -> std::pair<uint16_t, uint16_t>
+{
+    uint32_t l = *(uint32_t *)&a;
+    uint16_t value = (uint16_t)(l & 0xffff);
+    uint16_t key = (uint16_t)(l >> 16);
+    return std::make_pair(key, value);
+};
+auto decomp(std::pair<uint16_t, uint16_t> p) -> float
+{
+    uint32_t result = ((uint32_t)p.first) << 16 | (p.second & 0xffff);
+    return *(float *)&result;
+};
+
 int main()
 {
     // cv::Mat img = cv::imread("lena.jpg");
@@ -165,6 +180,7 @@ int main()
         // auto pixel = image.at<float>(0, 0);
     }
 #endif
+#if 0
     {
         /*
             double a = new Random(1).nextDouble();
@@ -268,5 +284,70 @@ int main()
         // archive(counts);
     }
 
+#endif
+    {
+        std::vector<uint32_t> vec;
+        // vec.resize(11497472);
+        // std::ifstream vec_is("descriptors_vector_short.dat", std::ios::binary);
+        // vec_is.read((char *)vec.data(), 11497472 * sizeof(uint32_t));
+        // vec_is.close();
+        std::ifstream vec_is("descriptors_vector_int(2).dat", std::ios::binary);
+        cereal::BinaryInputArchive vec_archive(vec_is);
+        vec_archive(vec);
+        vec_is.close();
+
+        spdlog::info("vec size: {}", vec.size());
+
+        std::map<uint16_t, std::vector<uint16_t>> map;
+        for (auto &i : vec)
+        {
+            auto p = comp(i);
+            auto result = decomp(p);
+            map[p.first].push_back(p.second);
+        }
+        std::ofstream map_os("map_.bin", std::ios::binary);
+        cereal::BinaryOutputArchive map_archive(map_os);
+        map_archive(map);
+        map_os.close();
+
+        std::map<uint16_t, int> counts;
+        std::vector<std::pair<uint16_t, int>> count_vec;
+        spdlog::info("map size: {}", map.size());
+        for (auto &i : map)
+        {
+            counts[i.first] = i.second.size();
+            count_vec.push_back(std::make_pair(i.first, i.second.size()));
+        }
+
+        std::sort(count_vec.begin(), count_vec.end(), [](std::pair<uint16_t, int> a, std::pair<uint16_t, int> b) -> bool
+                  { return a.second > b.second; });
+        for (int i = 0; i < 10; i++)
+        {
+            spdlog::info("key: {:x}, count: {}", count_vec[i].first, count_vec[i].second);
+        }
+        for (int i = 0; i < 10; i++)
+        {
+            spdlog::info("key: {:x}, count: {}", count_vec[count_vec.size() - 1 - i].first, count_vec[count_vec.size() - 1 - i].second);
+        }
+
+        std::ofstream os("counts.csv");
+        for (auto &i : count_vec)
+        {
+            os << std::hex << i.first << "," << std::dec << i.second << std::endl;
+        }
+        os.close();
+
+        // zlib
+        std::vector<char> zbuf;
+        zbuf.resize(compressBound(vec.size() * sizeof(uint32_t)));
+        uLongf destLen = zbuf.size();
+        compress((Bytef *)&zbuf[0], &destLen, (Bytef *)vec.data(), vec.size() * sizeof(uint32_t));
+        zbuf.resize(destLen);
+
+        std::ofstream zos("zbuf.bin", std::ios::binary);
+        cereal::BinaryOutputArchive zarchive(zos);
+        zarchive(zbuf);
+        zos.close();
+    }
     return 0;
 }
