@@ -249,7 +249,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_library(cvAutoTrack.Depends SHARED ${deps_src} ${deps_h})
 
-target_compile_definitions(cvAutoTrack.Depends PRIVATE 
+target_compile_definitions(cvAutoTrack.Depends
+PUBLIC 
+-D_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS
+PRIVATE 
 -DFMT_EXPORT 
 -DSPDLOG_COMPILED_LIB -DSPDLOG_SHARED_LIB -Dspdlog_EXPORTS
 -DOPENCV_EXPORTS -DCVAPI_EXPORTS
