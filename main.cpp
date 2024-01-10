@@ -16,7 +16,6 @@
 
 #include <fstream>
 #include <unordered_map>
-
 struct data
 {
     int x = 0;
