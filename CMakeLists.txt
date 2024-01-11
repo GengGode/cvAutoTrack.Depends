@@ -6,19 +6,26 @@ project(cvAutoTrack.Depends)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
 
 set(USED_PROXY OFF CACHE BOOL "是否使用代理")
+set(USED_MRIRROR OFF CACHE BOOL "是否使用国内镜像")
+set(USED_MRIRROR ON)
 if(USED_PROXY)
     message(STATUS "设置代理 127.0.0.1:1080")
     set(ENV{http_proxy} "http://127.0.0.1:1080")
     set(ENV{https_proxy} "http://127.0.0.1:1080")
 endif()
 
+set(GIT_HOST "github.com")
+if(USED_MRIRROR)
+    set(GIT_HOST "gitee.com")
+endif()
+
 include(FetchContent)
 
 message(STATUS "安装opencv")
-FetchContent_Populate(opencv_contrib GIT_REPOSITORY https://github.com/opencv/opencv_contrib.git GIT_TAG 4.8.0)
+FetchContent_Populate(opencv_contrib GIT_REPOSITORY https://${GIT_HOST}/opencv/opencv_contrib.git GIT_TAG 4.8.0)
 # # 手动下载opencv编译安装
 # # https://github.com/opencv/opencv.git 4.8.0
-FetchContent_Declare(opencv GIT_REPOSITORY https://github.com/opencv/opencv.git GIT_TAG 4.8.0)
+FetchContent_Declare(opencv GIT_REPOSITORY https://${GIT_HOST}/opencv/opencv.git GIT_TAG 4.8.0)
 set(BUILD_SHARED_LIBS ON)
 set(OPENCV_CONFIG_FILE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/opencv_gen_include)
 # extra modules
