@@ -22,10 +22,10 @@ endif()
 include(FetchContent)
 
 message(STATUS "安装opencv")
-FetchContent_Populate(opencv_contrib GIT_REPOSITORY https://${GIT_HOST}/opencv/opencv_contrib.git GIT_TAG 4.8.0)
+FetchContent_Populate(opencv_contrib GIT_REPOSITORY https://${GIT_HOST}/opencv/opencv_contrib.git GIT_TAG 4.8.0 GIT_SHALLOW 1)
 # # 手动下载opencv编译安装
 # # https://github.com/opencv/opencv.git 4.8.0
-FetchContent_Declare(opencv GIT_REPOSITORY https://${GIT_HOST}/opencv/opencv.git GIT_TAG 4.8.0)
+FetchContent_Declare(opencv GIT_REPOSITORY https://${GIT_HOST}/opencv/opencv.git GIT_TAG 4.8.0 GIT_SHALLOW 1)
 set(BUILD_SHARED_LIBS ON)
 set(OPENCV_CONFIG_FILE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/opencv_gen_include)
 # extra modules
@@ -126,15 +126,15 @@ endif()
 
 
 message(STATUS "安装 fmt")
-FetchContent_Populate(fmt GIT_REPOSITORY https://github.com/fmtlib/fmt GIT_TAG 10.2.0)
+FetchContent_Populate(fmt GIT_REPOSITORY https://github.com/fmtlib/fmt GIT_TAG 10.2.0 GIT_SHALLOW 1)
 set(BUILD_SHARED_LIBS OFF)
 
 message(STATUS "安装 spdlog")
-FetchContent_Populate(spdlog GIT_REPOSITORY https://github.com/gabime/spdlog.git GIT_TAG v1.12.0)
+FetchContent_Populate(spdlog GIT_REPOSITORY https://github.com/gabime/spdlog.git GIT_TAG v1.12.0 GIT_SHALLOW 1)
 set(BUILD_SHARED_LIBS OFF)
 
 message(STATUS "安装 cereal")
-FetchContent_Populate(cereal GIT_REPOSITORY https://github.com/USCiLab/cereal.git GIT_TAG v1.3.0)
+FetchContent_Populate(cereal GIT_REPOSITORY https://github.com/USCiLab/cereal.git GIT_TAG v1.3.0 GIT_SHALLOW 1)
 set(JUST_INSTALL_CEREAL ON)
 set(BUILD_SANDBOX OFF)
 
