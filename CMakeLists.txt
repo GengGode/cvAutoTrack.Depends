@@ -166,10 +166,16 @@ ${opencv_BINARY_DIR}/3rdparty/openjpeg/openjp2
 ${opencv_BINARY_DIR}/3rdparty/ippicv/ippicv_win/icv/include
 ${opencv_BINARY_DIR}/3rdparty/ippicv/ippicv_win/iw/include
 ${opencv_BINARY_DIR}/3rdparty/ippiw/ippicv_win/iw/include
+#linux
+${opencv_BINARY_DIR}/3rdparty/ippicv/ippicv_lnx/icv/include
+${opencv_BINARY_DIR}/3rdparty/ippicv/ippicv_lnx/iw/include
+${opencv_BINARY_DIR}/3rdparty/ippiw/ippicv_lnx/iw/include
 )
-
+if(WIN32)
 list(APPEND dep_opencv_libs ${opencv_BINARY_DIR}/3rdparty/ippicv/ippicv_win/icv/lib/intel64/ippicvmt.lib)
-
+else()
+list(APPEND dep_opencv_libs ${opencv_BINARY_DIR}/3rdparty/ippicv/ippicv_lnx/icv/lib/intel64/libippicv.a)
+endif()
 set(dep_fmt_include ${fmt_SOURCE_DIR}/include)
 set(dep_spdlog_include ${spdlog_SOURCE_DIR}/include)
 set(dep_cereal_include ${cereal_SOURCE_DIR}/include)
@@ -286,7 +292,9 @@ PRIVATE
 -DCOMPRESS
 )
 set(cvAutoTrack.Depends PROPERTIES OPENCV_ALLOCATOR_STATS_COUNTER_TYPE "long long")
+if(WIN32)
 target_compile_options(cvAutoTrack.Depends PRIVATE /MP)
+endif()
 target_include_directories(cvAutoTrack.Depends PRIVATE ${deps_include})
 target_link_directories(cvAutoTrack.Depends PRIVATE ${CMAKE_BINARY_DIR})
 target_link_libraries(cvAutoTrack.Depends PRIVATE ${dep_opencv_libs} 
